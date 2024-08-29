@@ -107,11 +107,6 @@ def get_namesc(message):
         bot.register_next_step_handler(message, get_name)
 
 
-
-
-
-
-
 print('bot start')
 bot.polling(none_stop=True, interval=0)
 print('bot stop')
