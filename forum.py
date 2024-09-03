@@ -64,3 +64,4 @@ def forum_mes(nameS):
     else:
         print(f'[MIDL ERROR] {nameS} не имеет класс str или list')
         return False
+

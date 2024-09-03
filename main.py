@@ -23,11 +23,23 @@ bot = telebot.TeleBot(TOKEN) #токен в config.py
 print('bot connect')
 
 #начало общения
+list_all = []
 list_bal = []
+list_rup = []
 def botstart():
     for id in js["Users"]:
-        if js["Users"][str(id)]['settings'][1] == 2:
-            list_bal.append(js["Users"][str(id)])
+        if js["Users"][str(id)]['settings'][1] == '2':
+            list_bal.append(js["Users"][str(id)]['chatid'])
+    for id in js["Users"]:
+        if js["Users"][str(id)]['settings'][1] == '3':
+            list_rup.append(js["Users"][str(id)]['chatid'])
+    for id in js["Users"]:
+        if js["Users"][str(id)]['settings'][1] == '1':
+            list_all.append(js["Users"][str(id)]['chatid'])
+            list_rup.append(js["Users"][str(id)]['chatid'])
+            list_bal.append(js["Users"][str(id)]['chatid'])
+
+
 
 
 botstart()
@@ -135,17 +147,20 @@ def forum(message):
     markup = types.InlineKeyboardMarkup()  # Используем InlineKeyboardMarkup
     item1 = types.InlineKeyboardButton(text="Все", callback_data='all')
     item2 = types.InlineKeyboardButton(text='Балансеры', callback_data='bal')
-    item3 = types.InlineKeyboardButton(text="Главные в EXBO", callback_data='main')
-    item4 = types.InlineKeyboardButton(text="КВ и сессии", callback_data='kv_sessions')
-    item5 = types.InlineKeyboardButton(text="Картоделы/билдеры", callback_data='builders')
-    item6 = types.InlineKeyboardButton(text="Краски/скины", callback_data='skins')
+    item3 = types.InlineKeyboardButton(text="рупоры", callback_data='rupor')
+    item4 = types.InlineKeyboardButton(text="сбросить", callback_data='clear')
+    #item3 = types.InlineKeyboardButton(text="Главные в EXBO", callback_data='main')
+    #item4 = types.InlineKeyboardButton(text="КВ и сессии", callback_data='kv_sessions')
+    #item5 = types.InlineKeyboardButton(text="Картоделы/билдеры", callback_data='builders')
+    #item6 = types.InlineKeyboardButton(text="Краски/скины", callback_data='skins')
 
-    markup.add(item1, item2, item3, item4, item5, item6)
+    markup.add(item1, item2, item3,item4)
     bot.send_message(user_id, "Выберите разработчиков какой категории вы будете отслеживать", reply_markup=markup)
 
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_worker(call):
+    markup = telebot.types.ReplyKeyboardRemove()
     if call.data == "bal":
         for id in js["Users"]:
             if js["Users"][id]['chatid'] == call.message.chat.id:
@@ -159,8 +174,52 @@ def callback_worker(call):
                 js["Users"][id]['settings'] = new_settings
 
                 save()  # Сохраните изменения
-                bot.send_message(call.message.chat.id, 'Запомню : )')
-                print(2)
+                bot.send_message(call.message.chat.id, 'Запомню : ты выбрал подписку на балансеров', reply_markup=markup)
+    elif call.data == "rupor":
+        for id in js["Users"]:
+            if js["Users"][id]['chatid'] == call.message.chat.id:
+                # Получаем текущие настройки
+                current_settings = js["Users"][id]['settings']
+
+                # Изменяем второй символ
+                new_settings = current_settings[:1] + '3' + current_settings[2:]
+
+                # Обновляем значение в словаре
+                js["Users"][id]['settings'] = new_settings
+
+                save()  # Сохраните изменения
+                bot.send_message(call.message.chat.id, 'Запомню : ты выбрал подписку на рупоров', reply_markup=markup)
+    elif call.data == "clear":
+        for id in js["Users"]:
+            if js["Users"][id]['chatid'] == call.message.chat.id:
+                # Получаем текущие настройки
+                current_settings = js["Users"][id]['settings']
+
+                # Изменяем второй символ
+                new_settings = current_settings[:1] + '0' + current_settings[2:]
+
+                # Обновляем значение в словаре
+                js["Users"][id]['settings'] = new_settings
+
+                save()  # Сохраните изменения
+                bot.send_message(call.message.chat.id, 'Запомню : ты сбросил настройки', reply_markup=markup)
+    elif call.data == "all":
+        for id in js["Users"]:
+            if js["Users"][id]['chatid'] == call.message.chat.id:
+                # Получаем текущие настройки
+                current_settings = js["Users"][id]['settings']
+
+                # Изменяем второй символ
+                new_settings = current_settings[:1] + '1' + current_settings[2:]
+
+                # Обновляем значение в словаре
+                js["Users"][id]['settings'] = new_settings
+
+                save()  # Сохраните изменения
+                bot.send_message(call.message.chat.id, 'Запомню : ты выбрал подписку на всех', reply_markup=markup)
+    telebot.types.ReplyKeyboardRemove()
+
+
 
 
 
@@ -170,21 +229,51 @@ def sleeptime(sec):
         continue
 
 
+def returnwhileforum(list_r, list_raz):
+    for name in list_r:  # Изменено: используем имя вместо индекса
+        print(1)
+        print(name)
+        new_messages = forum_mes([name])
+        if new_messages:
+            print(2)
+            for message in new_messages:  # отправка всех полученных сообщений по очереди
+                print(3)
+
+                # Проверяем, является ли message кортежем
+                if isinstance(message, tuple):
+                    # Извлекаем строку из кортежа
+                    clean_message = message[0]  # Предполагаем, что нужная строка находится в первом элементе кортежа
+                else:
+                    clean_message = message
+
+                # Убираем символы новой строки
+                clean_message = clean_message.replace(r'\n', '\n')  # Заменяем \n на /n
+                print(clean_message)
+
+                try:
+                    print(4)
+                    for j in list_raz:
+                        print(j)
+                        bot.send_message(j, f"Новое сообщение от {name}: \n{clean_message} \n ссылка на сообщение: {message[1]}")
+                        print(5)
+                except Exception as e:
+                    print(f"Ошибка при отправке сообщения: {e}")  # Выводим ошибку для отладки
+
+
+print(list_rup, list_bal, list_all)
+
+
 def whileForum():
     stop = False
+    balansers = ['zubzalinaza', 'Furgon', 'Acidragon']
+    rupers = ['Hreddd', 'Slyshashchii', 'normist', 'Prizrak132', 'ThaneST']
+
     while not stop:
-        balansers = ['zubzalinaza', 'Furgon', 'Acidragon', 'ThaneST']
-        for name in balansers:
-            new_messages = forum_mes([name])
-            if new_messages:
-                for message in new_messages:  # отправка всех полученных сообщений по очереди
-                    try:
-                        for i in list_bal:
-                            bot.send_message(i, f"Новое сообщение от {name}: {message}")
-                    except:
-                        for i in list_bal:
-                            bot.send_message(i, f"Новое сообщение от {name} длинное")
-        time.sleep(30)
+        returnwhileforum(rupers, list_rup)
+        returnwhileforum(balansers, list_bal)
+        time.sleep(5)
+
+
 
 # Запуск фонового потока
 thread = threading.Thread(target=whileForum)
