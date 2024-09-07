@@ -22,22 +22,56 @@ from threading import Thread #многопоточность
 bot = telebot.TeleBot(TOKEN) #токен в config.py
 print('bot connect')
 
+def sleeptime(sec):
+    time1 = time.time()
+    while (time.time() - time1) < sec:
+        pass
+
+
 #начало общения
-list_all = []
-list_bal = []
-list_rup = []
+list_all = [] #1
+list_bal = [] #2
+list_main = [] #3
+list_kv_sessions = [] #4
+list_skins = [] #5
+list_other = [] #6
+list_rup = [] #7
 def botstart():
+    list_all.clear()
+    list_bal.clear()
+    list_main.clear()
+    list_kv_sessions.clear()
+    list_skins.clear()
+    list_other.clear()
+    list_rup.clear()
     for id in js["Users"]:
         if js["Users"][str(id)]['settings'][1] == '2':
             list_bal.append(js["Users"][str(id)]['chatid'])
     for id in js["Users"]:
         if js["Users"][str(id)]['settings'][1] == '3':
+            list_main.append(js["Users"][str(id)]['chatid'])
+    for id in js["Users"]:
+        if js["Users"][str(id)]['settings'][1] == '4':
+            list_kv_sessions.append(js["Users"][str(id)]['chatid'])
+    for id in js["Users"]:
+        if js["Users"][str(id)]['settings'][1] == '5':
+            list_skins.append(js["Users"][str(id)]['chatid'])
+    for id in js["Users"]:
+        if js["Users"][str(id)]['settings'][1] == '6':
+            list_other.append(js["Users"][str(id)]['chatid'])
+    for id in js["Users"]:
+        if js["Users"][str(id)]['settings'][1] == '7':
             list_rup.append(js["Users"][str(id)]['chatid'])
     for id in js["Users"]:
         if js["Users"][str(id)]['settings'][1] == '1':
             list_all.append(js["Users"][str(id)]['chatid'])
-            list_rup.append(js["Users"][str(id)]['chatid'])
             list_bal.append(js["Users"][str(id)]['chatid'])
+            list_main.append(js["Users"][str(id)]['chatid'])
+            list_kv_sessions.append(js["Users"][str(id)]['chatid'])
+            list_skins.append(js["Users"][str(id)]['chatid'])
+            list_other.append(js["Users"][str(id)]['chatid'])
+            list_rup.append(js["Users"][str(id)]['chatid'])
+
 
 
 
@@ -145,16 +179,16 @@ def get_namesc(message):
 def forum(message):
     user_id = message.from_user.id
     markup = types.InlineKeyboardMarkup()  # Используем InlineKeyboardMarkup
-    item1 = types.InlineKeyboardButton(text="Все", callback_data='all')
-    item2 = types.InlineKeyboardButton(text='Балансеры', callback_data='bal')
-    item3 = types.InlineKeyboardButton(text="рупоры", callback_data='rupor')
-    item4 = types.InlineKeyboardButton(text="сбросить", callback_data='clear')
-    #item3 = types.InlineKeyboardButton(text="Главные в EXBO", callback_data='main')
-    #item4 = types.InlineKeyboardButton(text="КВ и сессии", callback_data='kv_sessions')
-    #item5 = types.InlineKeyboardButton(text="Картоделы/билдеры", callback_data='builders')
-    #item6 = types.InlineKeyboardButton(text="Краски/скины", callback_data='skins')
+    item1 = types.InlineKeyboardButton(text="Все", callback_data='all') #1
+    item2 = types.InlineKeyboardButton(text='Балансеры', callback_data='bal') #2
+    item3 = types.InlineKeyboardButton(text="Главные в EXBO", callback_data='main') #3
+    item4 = types.InlineKeyboardButton(text="КВ и сессии", callback_data='kv_sessions') #4
+    item5 = types.InlineKeyboardButton(text="Краски/скины/анимации/звуки", callback_data='skins') #5
+    item6 = types.InlineKeyboardButton(text="другие", callback_data='other') #6
+    item7 = types.InlineKeyboardButton(text="рупоры", callback_data='rupor') #7
+    item8 = types.InlineKeyboardButton(text="сбросить", callback_data='clear')
 
-    markup.add(item1, item2, item3,item4)
+    markup.add(item1, item2, item3,item4, item5, item6, item7, item8)
     bot.send_message(user_id, "Выберите разработчиков какой категории вы будете отслеживать", reply_markup=markup)
 
 
@@ -174,8 +208,8 @@ def callback_worker(call):
                 js["Users"][id]['settings'] = new_settings
 
                 save()  # Сохраните изменения
-                bot.send_message(call.message.chat.id, 'Запомню : ты выбрал подписку на балансеров', reply_markup=markup)
-    elif call.data == "rupor":
+                bot.send_message(call.message.chat.id, 'Запомню: ты выбрал подписку на балансеров', reply_markup=markup)
+    elif call.data == "main":
         for id in js["Users"]:
             if js["Users"][id]['chatid'] == call.message.chat.id:
                 # Получаем текущие настройки
@@ -188,21 +222,63 @@ def callback_worker(call):
                 js["Users"][id]['settings'] = new_settings
 
                 save()  # Сохраните изменения
-                bot.send_message(call.message.chat.id, 'Запомню : ты выбрал подписку на рупоров', reply_markup=markup)
-    elif call.data == "clear":
+                bot.send_message(call.message.chat.id, 'Запомню: ты выбрал подписку на главных в эксбо', reply_markup=markup)
+    elif call.data == "kv_sessions":
         for id in js["Users"]:
             if js["Users"][id]['chatid'] == call.message.chat.id:
                 # Получаем текущие настройки
                 current_settings = js["Users"][id]['settings']
 
                 # Изменяем второй символ
-                new_settings = current_settings[:1] + '0' + current_settings[2:]
+                new_settings = current_settings[:1] + '4' + current_settings[2:]
 
                 # Обновляем значение в словаре
                 js["Users"][id]['settings'] = new_settings
 
                 save()  # Сохраните изменения
-                bot.send_message(call.message.chat.id, 'Запомню : ты сбросил настройки', reply_markup=markup)
+                bot.send_message(call.message.chat.id, 'Запомню: ты выбрал подписку на разработчиков кв и сессионок', reply_markup=markup)
+    elif call.data == "skins":
+        for id in js["Users"]:
+            if js["Users"][id]['chatid'] == call.message.chat.id:
+                # Получаем текущие настройки
+                current_settings = js["Users"][id]['settings']
+
+                # Изменяем второй символ
+                new_settings = current_settings[:1] + '5' + current_settings[2:]
+
+                # Обновляем значение в словаре
+                js["Users"][id]['settings'] = new_settings
+
+                save()  # Сохраните изменения
+                bot.send_message(call.message.chat.id, 'Запомню: ты выбрал подписку на разработчиков кв и сессионок', reply_markup=markup)
+    elif call.data == "other":
+        for id in js["Users"]:
+            if js["Users"][id]['chatid'] == call.message.chat.id:
+                # Получаем текущие настройки
+                current_settings = js["Users"][id]['settings']
+
+                # Изменяем второй символ
+                new_settings = current_settings[:1] + '6' + current_settings[2:]
+
+                # Обновляем значение в словаре
+                js["Users"][id]['settings'] = new_settings
+
+                save()  # Сохраните изменения
+                bot.send_message(call.message.chat.id, 'Запомню: ты выбрал подписку на остальных разработчиков', reply_markup=markup)
+    elif call.data == "rupor":
+        for id in js["Users"]:
+            if js["Users"][id]['chatid'] == call.message.chat.id:
+                # Получаем текущие настройки
+                current_settings = js["Users"][id]['settings']
+
+                # Изменяем второй символ
+                new_settings = current_settings[:1] + '4' + current_settings[2:]
+
+                # Обновляем значение в словаре
+                js["Users"][id]['settings'] = new_settings
+
+                save()  # Сохраните изменения
+                bot.send_message(call.message.chat.id, 'Запомню: ты выбрал подписку на рупоров', reply_markup=markup)
     elif call.data == "all":
         for id in js["Users"]:
             if js["Users"][id]['chatid'] == call.message.chat.id:
@@ -216,17 +292,22 @@ def callback_worker(call):
                 js["Users"][id]['settings'] = new_settings
 
                 save()  # Сохраните изменения
-                bot.send_message(call.message.chat.id, 'Запомню : ты выбрал подписку на всех', reply_markup=markup)
+                bot.send_message(call.message.chat.id, 'Запомню: ты выбрал подписку на всех', reply_markup=markup)
+    elif call.data == "clear":
+        for id in js["Users"]:
+            if js["Users"][id]['chatid'] == call.message.chat.id:
+                # Получаем текущие настройки
+                current_settings = js["Users"][id]['settings']
+
+                # Изменяем второй символ
+                new_settings = current_settings[:1] + '0' + current_settings[2:]
+
+                # Обновляем значение в словаре
+                js["Users"][id]['settings'] = new_settings
+
+                save()  # Сохраните изменения
+                bot.send_message(call.message.chat.id, 'Ты сбросил настройки', reply_markup=markup)
     telebot.types.ReplyKeyboardRemove()
-
-
-
-
-
-def sleeptime(sec):
-    time1 = time.time()
-    while (time.time()-time1) >= sec:
-        continue
 
 
 def returnwhileforum(list_r, list_raz):
@@ -265,13 +346,24 @@ print(list_rup, list_bal, list_all)
 
 def whileForum():
     stop = False
-    balansers = ['zubzalinaza', 'Furgon', 'Acidragon']
+    balansers = ['zubzalinaza', 'Furgon', 'Acidragon', 'Boreus']
     rupers = ['Hreddd', 'Slyshashchii', 'normist', 'Prizrak132', 'ThaneST']
+    skin_zvuk = ['Plastinka', 'grin_d']
+    main = ['ZIV', 'RomeO', 'Folken', 'Gorlyli', 'Kazugaia', '__NightSkill__', 'USEC', 'moonshy5', 'Gorodskovich']
+    sessionki = ['Kommynist', 'WWtddw']
+    other_raz =  ['RedShark', '6eximmortal', 'Erildorian']
+
+
 
     while not stop:
-        returnwhileforum(rupers, list_rup)
         returnwhileforum(balansers, list_bal)
-        time.sleep(5)
+        returnwhileforum(main, list_main)
+        returnwhileforum(sessionki, list_kv_sessions)
+        returnwhileforum(skin_zvuk, list_skins)
+        returnwhileforum(other_raz, list_other)
+        returnwhileforum(rupers, list_rup)
+        botstart()
+
 
 
 
